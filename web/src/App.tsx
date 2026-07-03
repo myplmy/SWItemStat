@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import EmbedSamples from "./EmbedSamples";
 import EmbedView from "./EmbedView";
-import { parseEmbedConfig } from "./embed";
+import { parseEmbedConfig, resolveNotionTheme } from "./embed";
 import type { DashboardData, SortDirection, SortKey, WorkshopItem } from "./types";
 import { buildCsv, filterAndSortItems, formatDate, formatNumber, formatScore } from "./utils";
 
@@ -20,6 +21,12 @@ const columns: Array<{ key: SortKey; label: string; align?: "right" }> = [
 ];
 
 export default function App() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("view") === "embed-samples") return <EmbedSamples />;
+  return <Dashboard />;
+}
+
+function Dashboard() {
   const [embedConfig] = useState(() => parseEmbedConfig(window.location.search));
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,9 +41,32 @@ export default function App() {
     document.documentElement.dataset.embedTheme = embedConfig.theme;
     document.documentElement.dataset.embedCanvas = embedConfig.canvas;
     document.body.classList.add("embed-body");
+
+    let notionMedia: MediaQueryList | null = null;
+    const updateNotionTheme = () => {
+      document.documentElement.dataset.notionTheme = resolveNotionTheme(
+        embedConfig.theme,
+        notionMedia?.matches ?? null,
+      );
+    };
+
+    if (embedConfig.canvas === "notion") {
+      try {
+        notionMedia = typeof window.matchMedia === "function"
+          ? window.matchMedia("(prefers-color-scheme: dark)")
+          : null;
+      } catch {
+        notionMedia = null;
+      }
+      updateNotionTheme();
+      notionMedia?.addEventListener("change", updateNotionTheme);
+    }
+
     return () => {
+      notionMedia?.removeEventListener("change", updateNotionTheme);
       delete document.documentElement.dataset.embedTheme;
       delete document.documentElement.dataset.embedCanvas;
+      delete document.documentElement.dataset.notionTheme;
       document.body.classList.remove("embed-body");
     };
   }, [embedConfig]);
@@ -98,11 +128,14 @@ export default function App() {
           <h1>{data?.profile.vanity || "myplmy"}<span>의 창작마당 통계</span></h1>
           <p className="subtitle">공개 아이템의 현재 성과와 누적 지표를 한 화면에서 비교합니다.</p>
         </div>
-        {data && (
-          <a className="steam-link" href={data.profile.workshopUrl} target="_blank" rel="noreferrer">
-            Steam에서 보기 <span aria-hidden="true">↗</span>
-          </a>
-        )}
+        <div className="hero-actions">
+          <a className="steam-link" href="?view=embed-samples">임베드 샘플</a>
+          {data && (
+            <a className="steam-link" href={data.profile.workshopUrl} target="_blank" rel="noreferrer">
+              Steam에서 보기 <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </div>
       </header>
 
       {loading && <StatusPanel title="통계를 불러오는 중입니다" detail="Steam 응답을 정리하고 있습니다." />}

@@ -19,6 +19,31 @@ h1 span { color: #8e9cac; font-weight: 500; }
 .subtitle { margin: 18px 0 0; color: #8e9cac; font-size: 16px; }
 .steam-link { flex: none; padding: 12px 17px; border: 1px solid #314254; border-radius: 9px; color: #dce8f4; text-decoration: none; background: #101a24; }
 .steam-link:hover { border-color: #66c0f4; color: #66c0f4; }
+.hero-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+.sample-page { max-width: 1180px; }
+.sample-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 28px; }
+.sample-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 18px; border: 1px solid #233140; border-radius: 12px; background: #101820; }
+.sample-controls label > span { display: block; margin-bottom: 8px; color: #8e9cac; font-size: 12px; font-weight: 700; }
+.sample-controls select,
+.sample-controls input:not([type="checkbox"]) { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #314254; border-radius: 8px; outline: none; color: #e7eef7; background: #0b1219; }
+.sample-controls select:focus,
+.sample-controls input:focus { border-color: #66c0f4; box-shadow: 0 0 0 3px rgba(102, 192, 244, .12); }
+.sample-checkbox { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 10px; }
+.sample-checkbox > span { grid-column: 1 / -1; }
+.sample-checkbox input { width: 18px; height: 18px; margin: 0; accent-color: #66c0f4; }
+.sample-checkbox strong { color: #dce8f4; font-size: 13px; }
+.sample-checkbox.is-disabled { opacity: .55; }
+.sample-url { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; margin-top: 14px; }
+.sample-url input { min-width: 0; height: 42px; padding: 0 12px; border: 1px solid #314254; border-radius: 8px; color: #aebdca; background: #0b1219; }
+.sample-url button,
+.sample-url a { display: grid; min-height: 42px; padding: 0 15px; border: 1px solid #314254; border-radius: 8px; color: #dce8f4; background: #101a24; font-weight: 700; text-decoration: none; cursor: pointer; place-items: center; }
+.sample-url button:hover,
+.sample-url a:hover { border-color: #66c0f4; color: #66c0f4; }
+.sample-note { margin: 14px 2px; color: #8e9cac; font-size: 12px; }
+.sample-note code { color: #76c9f8; }
+.sample-preview { overflow: hidden; padding: 10px; border: 1px solid #233140; border-radius: 12px; background: #06090d; }
+.sample-preview iframe { display: block; width: 100%; border: 0; border-radius: 8px; background: transparent; }
 
 .summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 26px; }
 .metric { min-height: 112px; padding: 19px; border: 1px solid #233140; border-radius: 12px; background: linear-gradient(145deg, rgba(25, 36, 49, .96), rgba(15, 23, 32, .96)); }
@@ -66,7 +91,14 @@ tbody tr:hover td { background: rgba(102, 192, 244, .035); }
 [data-embed-theme="light"] body.embed-body { background: #f7f6f3; }
 [data-embed-theme="dark"] body.embed-body { background: #0b1017; }
 :root[data-embed-canvas="transparent"],
-:root[data-embed-canvas="transparent"] body.embed-body { background: transparent; }
+:root[data-embed-canvas="transparent"] body.embed-body,
+:root[data-embed-canvas="transparent"] #root { background-color: transparent !important; background-image: none !important; }
+:root[data-embed-canvas="notion"][data-notion-theme="light"],
+:root[data-embed-canvas="notion"][data-notion-theme="light"] body.embed-body,
+:root[data-embed-canvas="notion"][data-notion-theme="light"] #root { background-color: #fff !important; background-image: none !important; }
+:root[data-embed-canvas="notion"][data-notion-theme="dark"],
+:root[data-embed-canvas="notion"][data-notion-theme="dark"] body.embed-body,
+:root[data-embed-canvas="notion"][data-notion-theme="dark"] #root { background-color: #191919 !important; background-image: none !important; }
 :root[data-embed-canvas="transparent"] main.embed-page { padding: 0; }
 body.embed-body { min-width: 0; min-height: 0; }
 main.embed-page {
@@ -190,6 +222,12 @@ main.embed-page.theme-dark {
   h1 span { display: block; margin-top: 5px; }
   .subtitle { line-height: 1.6; }
   .steam-link { display: inline-block; margin-top: 22px; }
+  .hero-actions { justify-content: flex-start; }
+  .hero-actions .steam-link { margin-top: 12px; }
+  .sample-header { display: block; }
+  .sample-controls { grid-template-columns: 1fr; }
+  .sample-url { grid-template-columns: 1fr 1fr; }
+  .sample-url input { grid-column: 1 / -1; }
   .summary { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .metric { min-height: 96px; padding: 15px; }
   .metric strong { margin-top: 15px; }

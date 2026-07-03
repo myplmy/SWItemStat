@@ -6,6 +6,52 @@
     <meta name="theme-color" content="#101722" />
     <meta name="description" content="myplmy의 Steam Workshop 공개 아이템 통계 대시보드" />
     <title>Workshop Stats · myplmy</title>
+    <script>
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        const embed = params.get("embed");
+        if (embed !== "game" && embed !== "item") return;
+
+        const canvas = params.get("canvas");
+        if (canvas !== "transparent" && canvas !== "notion") return;
+
+        const fallbackTheme = params.get("theme") === "dark" ? "dark" : "light";
+        document.documentElement.dataset.embedCanvas = canvas;
+        document.documentElement.dataset.embedTheme = fallbackTheme;
+
+        if (canvas === "notion") {
+          let notionTheme = fallbackTheme;
+          try {
+            if (typeof window.matchMedia === "function") {
+              notionTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+          } catch {
+            notionTheme = fallbackTheme;
+          }
+          document.documentElement.dataset.notionTheme = notionTheme;
+        }
+      })();
+    </script>
+    <style>
+      html[data-embed-canvas="transparent"],
+      html[data-embed-canvas="transparent"] body,
+      html[data-embed-canvas="transparent"] #root {
+        background-color: transparent !important;
+        background-image: none !important;
+      }
+      html[data-embed-canvas="notion"][data-notion-theme="light"],
+      html[data-embed-canvas="notion"][data-notion-theme="light"] body,
+      html[data-embed-canvas="notion"][data-notion-theme="light"] #root {
+        background-color: #ffffff !important;
+        background-image: none !important;
+      }
+      html[data-embed-canvas="notion"][data-notion-theme="dark"],
+      html[data-embed-canvas="notion"][data-notion-theme="dark"] body,
+      html[data-embed-canvas="notion"][data-notion-theme="dark"] #root {
+        background-color: #191919 !important;
+        background-image: none !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -1,6 +1,6 @@
 import type { DashboardData, WorkshopItem } from "./types";
 
-export type EmbedCanvas = "solid" | "transparent";
+export type EmbedCanvas = "solid" | "transparent" | "notion";
 export type EmbedDensity = "compact" | "standard" | "full" | "notion";
 export type EmbedTheme = "light" | "dark";
 
@@ -31,6 +31,7 @@ export interface GameWidgetData {
 }
 
 const DENSITIES = new Set<EmbedDensity>(["compact", "standard", "full", "notion"]);
+const CANVASES = new Set<EmbedCanvas>(["solid", "transparent", "notion"]);
 const THEMES = new Set<EmbedTheme>(["light", "dark"]);
 const NUMERIC_ID = /^\d+$/;
 
@@ -40,8 +41,9 @@ export function parseEmbedConfig(search: string): EmbedConfig | null {
   if (kind !== "game" && kind !== "item") return null;
 
   const densityValue = params.get("density") as EmbedDensity | null;
+  const canvasValue = params.get("canvas") as EmbedCanvas | null;
   const themeValue = params.get("theme") as EmbedTheme | null;
-  const canvas: EmbedCanvas = params.get("canvas") === "transparent" ? "transparent" : "solid";
+  const canvas = canvasValue && CANVASES.has(canvasValue) ? canvasValue : "solid";
   const density = densityValue && DENSITIES.has(densityValue) ? densityValue : "standard";
   const theme = themeValue && THEMES.has(themeValue) ? themeValue : "light";
 
@@ -65,6 +67,11 @@ export function parseEmbedConfig(search: string): EmbedConfig | null {
     density,
     theme,
   };
+}
+
+export function resolveNotionTheme(fallback: EmbedTheme, prefersDark: boolean | null): EmbedTheme {
+  if (prefersDark === null) return fallback;
+  return prefersDark ? "dark" : "light";
 }
 
 export function findWidgetItem(data: DashboardData, publishedFileId: string): WorkshopItem | null {

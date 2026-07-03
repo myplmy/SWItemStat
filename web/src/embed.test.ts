@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGameWidget, findWidgetItem, parseEmbedConfig } from "./embed";
+import { buildGameWidget, findWidgetItem, parseEmbedConfig, resolveNotionTheme } from "./embed";
 import type { DashboardData, WorkshopItem } from "./types";
 
 const item: WorkshopItem = {
@@ -52,7 +52,7 @@ describe("embed configuration", () => {
   });
 
   it("defaults invalid options and rejects a malformed item id", () => {
-    expect(parseEmbedConfig("?embed=item&id=not-a-number&density=wide&theme=blue")).toEqual({
+    expect(parseEmbedConfig("?embed=item&id=not-a-number&density=wide&theme=blue&canvas=glass")).toEqual({
       kind: "item",
       publishedFileId: null,
       canvas: "solid",
@@ -63,6 +63,17 @@ describe("embed configuration", () => {
       canvas: "transparent",
       density: "notion",
     });
+    expect(parseEmbedConfig("?embed=item&id=100&density=notion&theme=dark&canvas=notion")).toMatchObject({
+      canvas: "notion",
+      density: "notion",
+      theme: "dark",
+    });
+  });
+
+  it("uses the detected Notion scheme and falls back to the requested theme", () => {
+    expect(resolveNotionTheme("light", true)).toBe("dark");
+    expect(resolveNotionTheme("dark", false)).toBe("light");
+    expect(resolveNotionTheme("dark", null)).toBe("dark");
   });
 });
 
