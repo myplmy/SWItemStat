@@ -1,0 +1,30 @@
+{
+  "name": "steam-workshop-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace web",
+    "build:web": "npm run build --workspace web",
+    "contract:steam": "tsx scripts/steam-contract.ts",
+    "dev:web": "npm run dev --workspace web",
+    "smoke:public": "tsx scripts/public-smoke.ts",
+    "test": "vitest run && npm run test --workspace web",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace web"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

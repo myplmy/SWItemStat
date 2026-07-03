@@ -1,0 +1,80 @@
+# Steam Workshop 통계 대시보드
+
+`myplmy`의 공개 Steam Workshop 아이템을 한 화면에서 비교하는 정적 React 대시보드입니다. GitHub Pages가 화면을 호스팅하고 Vercel Function이 서버 전용 Steam Web API 키를 사용합니다.
+
+## 구성
+
+- `web/`: React + TypeScript + Vite 정적 프런트엔드
+- `api/workshop.ts`: 고정 Steam 프로필만 제공하는 Vercel Function
+- `src/server/`: Steam API, 공개 Workshop HTML 폴백, 정규화 로직
+- `scripts/steam-contract.ts`: 실제 키로 비공식 Steam API 계약을 검증하는 배포 전 검사
+
+## 로컬 실행
+
+Node.js 20 이상이 필요합니다.
+
+```powershell
+npm install
+Copy-Item .env.example .env
+# .env의 STEAM_WEB_API_KEY를 설정
+npx vercel dev
+```
+
+다른 터미널에서 프런트엔드를 실행합니다.
+
+```powershell
+npm run dev:web
+```
+
+Vite는 `/api` 요청을 `http://localhost:3000`의 Vercel 개발 서버로 전달합니다.
+
+## 검증
+
+```powershell
+npm test
+npm run typecheck
+npm run build
+npm run smoke:public
+npm run contract:steam
+```
+
+`smoke:public`은 키 없이 공개 Workshop HTML 탐색과 대표 아이템 3개의 공개 상세 통계를 검사합니다.
+
+`contract:steam`은 다음을 실제 Steam 응답으로 검사합니다.
+
+- AppID를 생략한 `GetUserFiles`가 RimWorld(294100)와 Victoria 3(529340)를 모두 반환하는지
+- 대표 아이템 3개의 `votes_up`, `votes_down`, `score`가 반환되는지
+
+API 키는 출력하지 않습니다. 이 검사가 실패하면 배포하지 말고 Steam API 계약을 다시 확인해야 합니다.
+
+## Vercel 배포
+
+1. 저장소를 Vercel 프로젝트에 연결합니다.
+2. Production과 필요한 Preview 환경에 다음 환경 변수를 설정합니다.
+   - `STEAM_WEB_API_KEY`: Steam Web API 키
+   - `GITHUB_PAGES_ORIGIN`: 예: `https://myplmy.github.io` 또는 사용자 사이트의 정확한 origin
+   - `STEAM_ID`: 기본값 `76561197991373987`
+   - `STEAM_VANITY`: 기본값 `myplmy`
+3. 배포 후 `https://<project>.vercel.app/api/workshop`을 확인합니다.
+
+API는 쿼리 파라미터를 거부하므로 1차 버전에서는 다른 Steam 사용자를 조회할 수 없습니다. CORS는 GitHub Pages origin과 localhost만 허용하며, 응답은 Vercel CDN에서 15분 캐시됩니다.
+
+## GitHub Pages 배포
+
+1. 저장소 Settings → Pages에서 Source를 **GitHub Actions**로 설정합니다.
+2. Settings → Secrets and variables → Actions → Variables에 `VITE_API_BASE_URL`을 생성합니다.
+   - 값: `https://<project>.vercel.app/api`
+3. `main`에 push하면 테스트 후 `web/dist`가 배포됩니다.
+
+저장소 이름에 따른 GitHub Pages 하위 경로는 빌드 시 자동 적용됩니다. Steam API 키는 GitHub 변수나 프런트엔드 빌드에 넣지 않습니다.
+
+## 데이터 동작
+
+1. 키 기반 `IPublishedFileService/GetUserFiles`로 전체 게임의 아이템 ID를 탐색합니다.
+2. 실패하면 공개 `myworkshopfiles` 페이지를 순회해 아이템 ID와 AppID를 수집합니다.
+3. 공개 상세 API에서 방문·구독·즐겨찾기 통계를, 키 기반 상세 API에서 투표 통계를 병합합니다.
+4. 제작자가 일치하고 `visibility=0`인 공개 아이템만 응답합니다.
+
+Steam의 `myworkshopfiles` 목록에는 공동 작업자로 참여한 다른 제작자의 항목이 표시될 수 있습니다. 1차 버전은 계획대로 공개 상세 응답의 `creator`가 `STEAM_ID`와 일치하는 직접 소유 항목만 대시보드에 포함합니다.
+
+서버리스 인메모리 속도 제한은 인스턴스 단위의 보조 장치입니다. 임의 사용자 검색을 추가하는 2차 버전에서는 Upstash 같은 외부 저장소 기반 분산 속도 제한을 사용해야 합니다.
