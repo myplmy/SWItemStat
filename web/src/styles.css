@@ -128,14 +128,12 @@ main.embed-page.theme-dark {
 .embed-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px; background: var(--embed-border); }
 .embed-metrics > div { min-width: 0; padding: 17px 18px; background: var(--embed-card-bg); }
 .embed-metrics span { display: block; color: var(--embed-muted); font-size: 11px; }
-.embed-metrics strong { display: block; margin-top: 9px; overflow: hidden; color: var(--embed-text); font-size: clamp(18px, 3.5vw, 25px); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.embed-metrics strong { display: block; margin-top: 9px; overflow: visible; color: var(--embed-text); font-size: clamp(12px, 1.8vw, 16px); line-height: 1; text-overflow: clip; white-space: nowrap; }
 .embed-metrics .is-accent strong { color: var(--embed-accent); }
-.embed-metrics .is-fit strong { overflow: visible; font-size: clamp(13px, 2vw, 17px); letter-spacing: -.035em; text-overflow: clip; }
+.embed-metrics .is-fit strong { letter-spacing: -.035em; }
 .density-notion .embed-metrics { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .density-notion .embed-metrics > div { padding: 16px 12px; }
 .density-notion .embed-metrics span { min-height: 2.4em; line-height: 1.2; }
-.density-notion .embed-metrics strong { font-size: clamp(16px, 2.5vw, 22px); }
-.density-notion .embed-metrics .is-fit strong { font-size: clamp(12px, 1.8vw, 16px); }
 .embed-list { overflow-x: auto; border-top: 1px solid var(--embed-border); }
 .embed-list-grid { width: 100%; }
 .list-compact .embed-list-grid { min-width: 580px; }
