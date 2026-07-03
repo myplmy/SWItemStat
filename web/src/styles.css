@@ -67,6 +67,7 @@ tbody tr:hover td { background: rgba(102, 192, 244, .035); }
 [data-embed-theme="dark"] body.embed-body { background: #0b1017; }
 :root[data-embed-canvas="transparent"],
 :root[data-embed-canvas="transparent"] body.embed-body { background: transparent; }
+:root[data-embed-canvas="transparent"] main.embed-page { padding: 0; }
 body.embed-body { min-width: 0; min-height: 0; }
 main.embed-page {
   --embed-bg: #fff;
@@ -135,16 +136,21 @@ main.embed-page.theme-dark {
 .density-notion .embed-metrics > div { padding: 16px 12px; }
 .density-notion .embed-metrics span { min-height: 2.4em; line-height: 1.2; }
 .embed-list { overflow-x: auto; border-top: 1px solid var(--embed-border); }
+.embed-list.is-scrollable { max-height: 414px; overflow-y: auto; scrollbar-gutter: stable; }
 .embed-list-grid { width: 100%; }
 .list-compact .embed-list-grid { min-width: 580px; }
 .list-standard .embed-list-grid { min-width: 820px; }
 .list-full .embed-list-grid { min-width: 1160px; }
-.list-notion .embed-list-grid { min-width: 920px; }
+.list-notion { overflow-x: hidden; }
+.list-notion .embed-list-grid { min-width: 0; }
 .embed-list-header, .embed-list-row { display: grid; align-items: center; }
-.embed-list-header { color: var(--embed-muted); background: var(--embed-soft); font-size: 10px; font-weight: 800; }
+.embed-list-header { position: sticky; top: 0; z-index: 1; min-height: 44px; color: var(--embed-muted); background: var(--embed-soft); font-size: 10px; font-weight: 800; }
 .embed-list-header span, .embed-list-row > span, .embed-list-row > a { min-width: 0; padding: 10px 12px; white-space: nowrap; }
+.list-notion .embed-list-header span { padding-inline: 7px; line-height: 1.2; white-space: normal; }
+.list-notion .embed-list-row > span,
+.list-notion .embed-list-row > a { padding-inline: 7px; }
 .embed-list-header span:not(:first-child), .embed-list-row > span { text-align: right; }
-.embed-list-row { border-top: 1px solid var(--embed-border); color: var(--embed-muted); background: var(--embed-card-bg); font-size: 11px; font-variant-numeric: tabular-nums; }
+.embed-list-row { min-height: 37px; border-top: 1px solid var(--embed-border); color: var(--embed-muted); background: var(--embed-card-bg); font-size: 11px; font-variant-numeric: tabular-nums; }
 .embed-list-row > a { overflow: hidden; color: var(--embed-text); font-weight: 700; text-decoration: none; text-overflow: ellipsis; }
 .embed-list-row > a:hover { color: var(--embed-accent); }
 .embed-list-row:hover { background: var(--embed-soft); }

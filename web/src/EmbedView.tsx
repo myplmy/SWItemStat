@@ -91,13 +91,13 @@ function GameWidget({
     metrics = [
       { label: "방문자", value: formatNumber(game.totals.views) },
       {
-        label: "현재구독/누적구독",
+        label: "구독수(현재/누적)",
         value: formatNumberPair(game.totals.currentSubscriptions, game.totals.lifetimeSubscriptions),
         accent: true,
         fit: true,
       },
       {
-        label: "현재즐겨찾기/누적즐겨찾기",
+        label: "즐겨찾기(현재/누적)",
         value: formatNumberPair(game.totals.currentFavorites, game.totals.lifetimeFavorites),
         fit: true,
       },
@@ -194,13 +194,13 @@ function ItemWidget({
     metrics = [
       { label: "방문자", value: formatNumber(item.views) },
       {
-        label: "현재구독/누적구독",
+        label: "구독수(현재/누적)",
         value: formatNumberPair(item.currentSubscriptions, item.lifetimeSubscriptions),
         accent: true,
         fit: true,
       },
       {
-        label: "현재즐겨찾기/누적즐겨찾기",
+        label: "즐겨찾기(현재/누적)",
         value: formatNumberPair(item.currentFavorites, item.lifetimeFavorites),
         fit: true,
       },
@@ -304,11 +304,11 @@ function GameModList({ density, items }: { density: EmbedDensity; items: Worksho
     columns = [
       { label: "방문자", value: (item) => formatNumber(item.views) },
       {
-        label: "현재구독/누적구독",
+        label: "구독수(현재/누적)",
         value: (item) => formatNumberPair(item.currentSubscriptions, item.lifetimeSubscriptions),
       },
       {
-        label: "현재즐겨찾기/누적즐겨찾기",
+        label: "즐겨찾기(현재/누적)",
         value: (item) => formatNumberPair(item.currentFavorites, item.lifetimeFavorites),
       },
       {
@@ -347,11 +347,19 @@ function GameModList({ density, items }: { density: EmbedDensity; items: Worksho
   }
 
   const gridStyle = {
-    gridTemplateColumns: `minmax(220px, 1.8fr) repeat(${columns.length}, minmax(92px, .7fr))`,
+    gridTemplateColumns: density === "notion"
+      ? `minmax(120px, 1.45fr) repeat(${columns.length}, minmax(0, 1fr))`
+      : `minmax(220px, 1.8fr) repeat(${columns.length}, minmax(92px, .7fr))`,
   } satisfies CSSProperties;
 
+  const listClassName = [
+    "embed-list",
+    `list-${density}`,
+    items.length > 10 ? "is-scrollable" : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <section className={`embed-list list-${density}`} aria-label="게임별 모드 통계 목록">
+    <section className={listClassName} aria-label="게임별 모드 통계 목록">
       <div className="embed-list-grid" role="table">
         <div className="embed-list-header" role="row" style={gridStyle}>
           <span role="columnheader">모드</span>

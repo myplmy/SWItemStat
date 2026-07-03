@@ -97,9 +97,9 @@ https://myplmy.github.io/SWItemStat/?embed=item&id=3547456198&density=notion&the
 - `canvas`: 카드 바깥 배경을 없애려면 `transparent`, 일반 배경은 `solid` (기본값 `solid`)
 - `list`: 게임 위젯의 모드별 1행 통계 목록을 표시하려면 `on`, 숨기려면 `off` (기본값 `off`)
 
-`density=notion`은 방문자, 현재/누적 구독, 현재/누적 즐겨찾기, 긍정/전체 평가, 구독률을 정확히 5열로 표시합니다. 구독률은 현재 구독 수를 방문자 수로 나눈 값입니다. Notion의 부모 테마는 교차 출처 iframe에서 읽을 수 없으므로 `theme`은 직접 선택하고, 카드 바깥 영역만 부모 배경이 비치게 하려면 `canvas=transparent`를 함께 사용합니다.
+`density=notion`은 방문자, 구독수(현재/누적), 즐겨찾기(현재/누적), 긍정/전체 평가, 구독률을 정확히 5열로 표시합니다. 구독률은 현재 구독 수를 방문자 수로 나눈 값입니다. Notion의 부모 테마는 교차 출처 iframe에서 읽을 수 없으므로 `theme`은 직접 선택합니다. `canvas=transparent`는 카드 바깥 패딩을 제거하고 문서 배경이 비치도록 시도하지만, Notion의 iframe 표면 자체가 불투명하면 실제 투명 합성이 제한될 수 있습니다.
 
-`list=on`은 모드명과 선택한 `density`에 맞는 개별 통계를 한 모드당 한 줄로 표시합니다. 좁은 Notion 블록에서는 목록 영역을 가로로 스크롤할 수 있습니다. 목록 없는 부모 페이지에는 Victoria 3와 RimWorld 게임 요약을 2열로 배치하고, 목록을 표시할 때는 충분한 너비의 1열 블록을 권장합니다. Notion 블록 높이는 `compact` 240~300px, `standard` 360~440px, `full` 560~700px을 기준으로 하되 `list=on`에서는 모드 수에 맞게 늘립니다.
+`list=on`은 모드명과 선택한 `density`에 맞는 개별 통계를 한 모드당 한 줄로 표시합니다. `density=notion` 목록은 가로 스크롤 없이 블록 너비에 맞춰지고, 항목이 10개를 초과하면 헤더를 고정한 채 목록에 세로 스크롤을 표시합니다. 목록 없는 부모 페이지에는 Victoria 3와 RimWorld 게임 요약을 2열로 배치하고, 목록을 표시할 때는 충분한 너비의 1열 블록을 권장합니다. Notion 블록 높이는 `compact` 240~300px, `standard` 360~440px, `full` 560~700px을 기준으로 합니다.
 
 ## 데이터 동작
 
