@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import EmbedView from "./EmbedView";
+import { parseEmbedConfig } from "./embed";
 import type { DashboardData, SortDirection, SortKey, WorkshopItem } from "./types";
 import { buildCsv, filterAndSortItems, formatDate, formatNumber, formatScore } from "./utils";
 
@@ -18,6 +20,7 @@ const columns: Array<{ key: SortKey; label: string; align?: "right" }> = [
 ];
 
 export default function App() {
+  const [embedConfig] = useState(() => parseEmbedConfig(window.location.search));
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,6 +28,16 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  useEffect(() => {
+    if (!embedConfig) return;
+    document.documentElement.dataset.embedTheme = embedConfig.theme;
+    document.body.classList.add("embed-body");
+    return () => {
+      delete document.documentElement.dataset.embedTheme;
+      document.body.classList.remove("embed-body");
+    };
+  }, [embedConfig]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -69,6 +82,10 @@ export default function App() {
     anchor.download = `steam-workshop-${data.profile.vanity}-${new Date().toISOString().slice(0, 10)}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  if (embedConfig) {
+    return <EmbedView config={embedConfig} data={data} error={error} loading={loading} />;
   }
 
   return (

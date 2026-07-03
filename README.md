@@ -68,6 +68,34 @@ API는 쿼리 파라미터를 거부하므로 1차 버전에서는 다른 Steam 
 
 저장소 이름에 따른 GitHub Pages 하위 경로는 빌드 시 자동 적용됩니다. Steam API 키는 GitHub 변수나 프런트엔드 빌드에 넣지 않습니다.
 
+## Notion 임베드 위젯
+
+Notion 페이지에서 `/embed` 블록을 만든 뒤 아래와 같은 GitHub Pages URL을 붙여 넣습니다. 서버 API는 전체 대시보드와 동일하며, 위젯이 응답에서 지정한 게임 또는 Workshop 항목만 선택합니다.
+
+게임 요약 예시:
+
+```text
+https://myplmy.github.io/SWItemStat/?embed=game&app=529340&density=standard&theme=light
+https://myplmy.github.io/SWItemStat/?embed=game&app=294100&density=standard&theme=light
+```
+
+개별 모드 예시:
+
+```text
+https://myplmy.github.io/SWItemStat/?embed=item&id=3598011620&density=standard&theme=light
+https://myplmy.github.io/SWItemStat/?embed=item&id=3547456198&density=full&theme=dark
+```
+
+지원하는 URL 파라미터:
+
+- `embed`: `game` 또는 `item`
+- `app`: 게임 위젯에서 사용할 Steam AppID
+- `id`: 개별 위젯에서 사용할 Workshop ID
+- `density`: `compact`, `standard`, `full` (기본값 `standard`)
+- `theme`: `light`, `dark` (기본값 `light`)
+
+부모 페이지에는 Victoria 3와 RimWorld 게임 요약을 2열로 배치하고, 각 하위 페이지에는 해당 Workshop ID의 개별 위젯을 배치하는 구성을 권장합니다. Notion 블록 높이는 `compact` 240~300px, `standard` 360~440px, `full` 560~700px 정도에서 내용에 맞게 조정합니다.
+
 ## 데이터 동작
 
 1. 키 기반 `IPublishedFileService/GetUserFiles`로 전체 게임의 아이템 ID를 탐색합니다.
