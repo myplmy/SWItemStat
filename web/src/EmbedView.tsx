@@ -1,7 +1,8 @@
+import type { CSSProperties } from "react";
 import type { EmbedConfig, EmbedDensity, GameWidgetData } from "./embed";
 import { buildGameWidget, findWidgetItem } from "./embed";
 import type { DashboardData, WorkshopItem } from "./types";
-import { formatDate, formatNumber, formatScore } from "./utils";
+import { formatDate, formatNumber, formatScore, formatVoteRatio } from "./utils";
 
 interface EmbedViewProps {
   config: EmbedConfig;
@@ -43,7 +44,15 @@ export default function EmbedView({ config, data, error, loading }: EmbedViewPro
     if (!game) {
       return <EmbedError className={className} detail={`AppID ${config.appId}의 공개 항목을 찾을 수 없습니다.`} />;
     }
-    return <GameWidget className={className} data={data} density={config.density} game={game} />;
+    return (
+      <GameWidget
+        className={className}
+        data={data}
+        density={config.density}
+        game={game}
+        showList={config.showList}
+      />
+    );
   }
 
   if (!config.publishedFileId) {
@@ -61,11 +70,13 @@ function GameWidget({
   data,
   density,
   game,
+  showList,
 }: {
   className: string;
   data: DashboardData;
   density: EmbedDensity;
   game: GameWidgetData;
+  showList: boolean;
 }) {
   const metrics: WidgetMetric[] = [
     { label: "공개 모드", value: formatNumber(game.itemCount) },
@@ -73,17 +84,18 @@ function GameWidget({
     { label: "현재 구독", value: formatNumber(game.totals.currentSubscriptions), accent: true },
     { label: "누적 구독", value: formatNumber(game.totals.lifetimeSubscriptions) },
   ];
-  if (density !== "compact") {
+  if (density === "standard") {
     metrics.push(
       { label: "현재 즐겨찾기", value: formatNumber(game.totals.currentFavorites) },
-      { label: "전체 평가", value: formatNumber(game.totals.ratings) },
+      { label: "긍정평가/전체평가", value: formatVoteRatio(game.positiveRatings, game.totals.ratings) },
     );
   }
   if (density === "full") {
-    metrics.splice(metrics.length - 1, 0, {
-      label: "누적 즐겨찾기",
-      value: formatNumber(game.totals.lifetimeFavorites),
-    });
+    metrics.push(
+      { label: "현재 즐겨찾기", value: formatNumber(game.totals.currentFavorites) },
+      { label: "누적 즐겨찾기", value: formatNumber(game.totals.lifetimeFavorites) },
+      { label: "긍정평가/전체평가", value: formatVoteRatio(game.positiveRatings, game.totals.ratings) },
+    );
   }
 
   return (
@@ -96,6 +108,7 @@ function GameWidget({
           url={data.profile.workshopUrl}
         />
         <MetricGrid metrics={metrics} />
+        {showList && <GameModList density={density} items={game.items} />}
         <WidgetFooter fetchedAt={data.meta.fetchedAt} warningCount={data.meta.warnings.length} />
       </article>
     </main>
@@ -113,24 +126,35 @@ function ItemWidget({
   density: EmbedDensity;
   item: WorkshopItem;
 }) {
-  const metrics: WidgetMetric[] = [
-    { label: "방문자", value: formatNumber(item.views) },
-    { label: "현재 구독", value: formatNumber(item.currentSubscriptions), accent: true },
-    { label: "누적 구독", value: formatNumber(item.lifetimeSubscriptions) },
-    { label: "평가 점수", value: formatScore(item.ratingScore) },
-  ];
-  if (density !== "compact") {
-    metrics.splice(3, 0,
+  let metrics: WidgetMetric[];
+  if (density === "compact") {
+    metrics = [
+      { label: "방문자", value: formatNumber(item.views) },
+      { label: "현재 구독", value: formatNumber(item.currentSubscriptions), accent: true },
+      { label: "누적 구독", value: formatNumber(item.lifetimeSubscriptions) },
+      { label: "평가 점수", value: formatScore(item.ratingScore) },
+    ];
+  } else if (density === "standard") {
+    metrics = [
+      { label: "방문자", value: formatNumber(item.views) },
+      { label: "현재 구독", value: formatNumber(item.currentSubscriptions), accent: true },
+      { label: "누적 구독", value: formatNumber(item.lifetimeSubscriptions) },
       { label: "현재 즐겨찾기", value: formatNumber(item.currentFavorites) },
       { label: "누적 즐겨찾기", value: formatNumber(item.lifetimeFavorites) },
-    );
-  }
-  if (density === "full") {
-    metrics.push(
+      { label: "긍정평가/전체평가", value: formatVoteRatio(item.votesUp, item.ratingCount) },
+    ];
+  } else {
+    metrics = [
+      { label: "방문자", value: formatNumber(item.views) },
+      { label: "현재 구독", value: formatNumber(item.currentSubscriptions), accent: true },
+      { label: "누적 구독", value: formatNumber(item.lifetimeSubscriptions) },
+      { label: "현재 즐겨찾기", value: formatNumber(item.currentFavorites) },
+      { label: "누적 즐겨찾기", value: formatNumber(item.lifetimeFavorites) },
+      { label: "평가 점수", value: formatScore(item.ratingScore) },
       { label: "전체 평가", value: formatNumber(item.ratingCount) },
       { label: "찬성", value: formatNumber(item.votesUp) },
       { label: "반대", value: formatNumber(item.votesDown) },
-    );
+    ];
   }
 
   return (
@@ -191,6 +215,62 @@ function MetricGrid({ metrics }: { metrics: WidgetMetric[] }) {
           <strong>{metric.value}</strong>
         </div>
       ))}
+    </section>
+  );
+}
+
+interface ListColumn {
+  label: string;
+  value: (item: WorkshopItem) => string;
+}
+
+function GameModList({ density, items }: { density: EmbedDensity; items: WorkshopItem[] }) {
+  const columns: ListColumn[] = [
+    { label: "방문자", value: (item) => formatNumber(item.views) },
+    { label: "현재 구독", value: (item) => formatNumber(item.currentSubscriptions) },
+    { label: "누적 구독", value: (item) => formatNumber(item.lifetimeSubscriptions) },
+  ];
+  if (density !== "compact") {
+    columns.push({ label: "현재 즐겨찾기", value: (item) => formatNumber(item.currentFavorites) });
+  }
+  if (density === "full") {
+    columns.push({ label: "누적 즐겨찾기", value: (item) => formatNumber(item.lifetimeFavorites) });
+  }
+  if (density !== "compact") {
+    columns.push({
+      label: "긍정평가/전체평가",
+      value: (item) => formatVoteRatio(item.votesUp, item.ratingCount),
+    });
+  }
+  if (density === "full") {
+    columns.push(
+      { label: "평가 점수", value: (item) => formatScore(item.ratingScore) },
+      { label: "최근 수정", value: (item) => formatDate(item.updatedAt) },
+    );
+  }
+
+  const gridStyle = {
+    gridTemplateColumns: `minmax(220px, 1.8fr) repeat(${columns.length}, minmax(92px, .7fr))`,
+  } satisfies CSSProperties;
+
+  return (
+    <section className={`embed-list list-${density}`} aria-label="게임별 모드 통계 목록">
+      <div className="embed-list-grid" role="table">
+        <div className="embed-list-header" role="row" style={gridStyle}>
+          <span role="columnheader">모드</span>
+          {columns.map((column) => <span key={column.label} role="columnheader">{column.label}</span>)}
+        </div>
+        {items.map((item) => (
+          <div className="embed-list-row" key={item.publishedFileId} role="row" style={gridStyle}>
+            <a href={item.workshopUrl} target="_blank" rel="noreferrer" role="cell" title={item.title}>
+              {item.title}
+            </a>
+            {columns.map((column) => (
+              <span key={column.label} role="cell">{column.value(item)}</span>
+            ))}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

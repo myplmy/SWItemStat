@@ -40,10 +40,12 @@ const data: DashboardData = {
 describe("embed configuration", () => {
   it("returns null for the normal dashboard and parses a game widget", () => {
     expect(parseEmbedConfig("?query=test")).toBeNull();
-    expect(parseEmbedConfig("?embed=game&app=529340&density=compact&theme=dark")).toEqual({
+    expect(parseEmbedConfig("?embed=game&app=529340")).toMatchObject({ showList: false });
+    expect(parseEmbedConfig("?embed=game&app=529340&density=compact&theme=dark&list=on")).toEqual({
       kind: "game",
       appId: "529340",
       density: "compact",
+      showList: true,
       theme: "dark",
     });
   });
@@ -63,6 +65,8 @@ describe("embed data selection", () => {
     expect(buildGameWidget(data, "529340")).toMatchObject({
       appName: "Victoria 3",
       itemCount: 2,
+      items: data.items,
+      positiveRatings: 18,
       totals: { currentSubscriptions: 5, ratings: 20, views: 50 },
     });
     expect(buildGameWidget(data, "294100")).toBeNull();

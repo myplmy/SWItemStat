@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { WorkshopItem } from "./types";
-import { buildCsv, filterAndSortItems } from "./utils";
+import { buildCsv, filterAndSortItems, formatVoteRatio } from "./utils";
 
 const base: WorkshopItem = {
   appId: "529340",
@@ -35,5 +35,12 @@ describe("dashboard utilities", () => {
     const csv = buildCsv([base]);
     expect(csv).toContain('"Alpha, Mod"');
     expect(csv.startsWith("\uFEFF")).toBe(true);
+  });
+
+  it("formats positive and total ratings as a ratio and percentage", () => {
+    expect(formatVoteRatio(4, 5)).toBe("4/5 (80%)");
+    expect(formatVoteRatio(2, 3)).toBe("2/3 (66.7%)");
+    expect(formatVoteRatio(null, 5)).toBe("—");
+    expect(formatVoteRatio(0, 0)).toBe("—");
   });
 });

@@ -8,6 +8,7 @@ export type EmbedConfig =
       kind: "game";
       appId: string | null;
       density: EmbedDensity;
+      showList: boolean;
       theme: EmbedTheme;
     }
   | {
@@ -21,6 +22,8 @@ export interface GameWidgetData {
   appId: string;
   appName: string;
   itemCount: number;
+  items: WorkshopItem[];
+  positiveRatings: number | null;
   totals: DashboardData["totals"];
 }
 
@@ -44,6 +47,7 @@ export function parseEmbedConfig(search: string): EmbedConfig | null {
       kind,
       appId: appId && NUMERIC_ID.test(appId) ? appId : null,
       density,
+      showList: params.get("list") === "on",
       theme,
     };
   }
@@ -70,6 +74,8 @@ export function buildGameWidget(data: DashboardData, appId: string): GameWidgetD
     appId,
     appName: game?.name || items[0].appName,
     itemCount: items.length,
+    items,
+    positiveRatings: sumOptional(items, "votesUp"),
     totals: {
       currentFavorites: sum(items, "currentFavorites"),
       currentSubscriptions: sum(items, "currentSubscriptions"),
@@ -79,6 +85,13 @@ export function buildGameWidget(data: DashboardData, appId: string): GameWidgetD
       views: sum(items, "views"),
     },
   };
+}
+
+function sumOptional(items: WorkshopItem[], key: keyof WorkshopItem): number | null {
+  const values = items
+    .map((item) => item[key])
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  return values.length > 0 ? values.reduce((total, value) => total + value, 0) : null;
 }
 
 function sum(items: WorkshopItem[], key: keyof WorkshopItem): number {

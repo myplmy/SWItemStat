@@ -75,7 +75,7 @@ Notion 페이지에서 `/embed` 블록을 만든 뒤 아래와 같은 GitHub Pag
 게임 요약 예시:
 
 ```text
-https://myplmy.github.io/SWItemStat/?embed=game&app=529340&density=standard&theme=light
+https://myplmy.github.io/SWItemStat/?embed=game&app=529340&density=standard&theme=light&list=on
 https://myplmy.github.io/SWItemStat/?embed=game&app=294100&density=standard&theme=light
 ```
 
@@ -93,8 +93,9 @@ https://myplmy.github.io/SWItemStat/?embed=item&id=3547456198&density=full&theme
 - `id`: 개별 위젯에서 사용할 Workshop ID
 - `density`: `compact`, `standard`, `full` (기본값 `standard`)
 - `theme`: `light`, `dark` (기본값 `light`)
+- `list`: 게임 위젯의 모드별 1행 통계 목록을 표시하려면 `on`, 숨기려면 `off` (기본값 `off`)
 
-부모 페이지에는 Victoria 3와 RimWorld 게임 요약을 2열로 배치하고, 각 하위 페이지에는 해당 Workshop ID의 개별 위젯을 배치하는 구성을 권장합니다. Notion 블록 높이는 `compact` 240~300px, `standard` 360~440px, `full` 560~700px 정도에서 내용에 맞게 조정합니다.
+`list=on`은 모드명과 선택한 `density`에 맞는 개별 통계를 한 모드당 한 줄로 표시합니다. 좁은 Notion 블록에서는 목록 영역을 가로로 스크롤할 수 있습니다. 목록 없는 부모 페이지에는 Victoria 3와 RimWorld 게임 요약을 2열로 배치하고, 목록을 표시할 때는 충분한 너비의 1열 블록을 권장합니다. Notion 블록 높이는 `compact` 240~300px, `standard` 360~440px, `full` 560~700px을 기준으로 하되 `list=on`에서는 모드 수에 맞게 늘립니다.
 
 ## 데이터 동작
 

@@ -49,6 +49,12 @@ export function formatScore(value: number | null): string {
   return value === null ? "—" : `${(value * 100).toFixed(1)}%`;
 }
 
+export function formatVoteRatio(positive: number | null, total: number | null): string {
+  if (positive === null || total === null || total <= 0) return "—";
+  const percentage = new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format((positive / total) * 100);
+  return `${formatNumber(positive)}/${formatNumber(total)} (${percentage}%)`;
+}
+
 export function formatDate(value: string | null): string {
   if (!value) return "—";
   const date = new Date(value);
