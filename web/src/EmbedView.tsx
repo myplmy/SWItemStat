@@ -355,7 +355,7 @@ function GameModList({ density, items }: { density: EmbedDensity; items: Worksho
   const listClassName = [
     "embed-list",
     `list-${density}`,
-    items.length > 10 ? "is-scrollable" : "",
+    items.length >= 10 ? "is-scrollable" : "",
   ].filter(Boolean).join(" ");
 
   return (
