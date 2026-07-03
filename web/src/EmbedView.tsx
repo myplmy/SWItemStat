@@ -2,7 +2,14 @@ import type { CSSProperties } from "react";
 import type { EmbedConfig, EmbedDensity, GameWidgetData } from "./embed";
 import { buildGameWidget, findWidgetItem } from "./embed";
 import type { DashboardData, WorkshopItem } from "./types";
-import { formatDate, formatNumber, formatScore, formatVoteRatio } from "./utils";
+import {
+  formatDate,
+  formatNumber,
+  formatNumberPair,
+  formatScore,
+  formatSubscriptionRate,
+  formatVoteRatio,
+} from "./utils";
 
 interface EmbedViewProps {
   config: EmbedConfig;
@@ -15,6 +22,7 @@ interface WidgetMetric {
   label: string;
   value: string;
   accent?: boolean;
+  fit?: boolean;
 }
 
 export default function EmbedView({ config, data, error, loading }: EmbedViewProps) {
@@ -78,23 +86,58 @@ function GameWidget({
   game: GameWidgetData;
   showList: boolean;
 }) {
-  const metrics: WidgetMetric[] = [
-    { label: "공개 모드", value: formatNumber(game.itemCount) },
-    { label: "방문자", value: formatNumber(game.totals.views) },
-    { label: "현재 구독", value: formatNumber(game.totals.currentSubscriptions), accent: true },
-    { label: "누적 구독", value: formatNumber(game.totals.lifetimeSubscriptions) },
-  ];
+  let metrics: WidgetMetric[];
+  if (density === "notion") {
+    metrics = [
+      { label: "방문자", value: formatNumber(game.totals.views) },
+      {
+        label: "현재구독/누적구독",
+        value: formatNumberPair(game.totals.currentSubscriptions, game.totals.lifetimeSubscriptions),
+        accent: true,
+        fit: true,
+      },
+      {
+        label: "현재즐겨찾기/누적즐겨찾기",
+        value: formatNumberPair(game.totals.currentFavorites, game.totals.lifetimeFavorites),
+        fit: true,
+      },
+      {
+        label: "긍정평가/전체평가",
+        value: formatVoteRatio(game.positiveRatings, game.totals.ratings),
+        fit: true,
+      },
+      {
+        label: "구독률",
+        value: formatSubscriptionRate(game.totals.currentSubscriptions, game.totals.views),
+      },
+    ];
+  } else {
+    metrics = [
+      { label: "공개 모드", value: formatNumber(game.itemCount) },
+      { label: "방문자", value: formatNumber(game.totals.views) },
+      { label: "현재 구독", value: formatNumber(game.totals.currentSubscriptions), accent: true },
+      { label: "누적 구독", value: formatNumber(game.totals.lifetimeSubscriptions) },
+    ];
+  }
   if (density === "standard") {
     metrics.push(
       { label: "현재 즐겨찾기", value: formatNumber(game.totals.currentFavorites) },
-      { label: "긍정평가/전체평가", value: formatVoteRatio(game.positiveRatings, game.totals.ratings) },
+      {
+        label: "긍정평가/전체평가",
+        value: formatVoteRatio(game.positiveRatings, game.totals.ratings),
+        fit: true,
+      },
     );
   }
   if (density === "full") {
     metrics.push(
       { label: "현재 즐겨찾기", value: formatNumber(game.totals.currentFavorites) },
       { label: "누적 즐겨찾기", value: formatNumber(game.totals.lifetimeFavorites) },
-      { label: "긍정평가/전체평가", value: formatVoteRatio(game.positiveRatings, game.totals.ratings) },
+      {
+        label: "긍정평가/전체평가",
+        value: formatVoteRatio(game.positiveRatings, game.totals.ratings),
+        fit: true,
+      },
     );
   }
 
@@ -141,7 +184,35 @@ function ItemWidget({
       { label: "누적 구독", value: formatNumber(item.lifetimeSubscriptions) },
       { label: "현재 즐겨찾기", value: formatNumber(item.currentFavorites) },
       { label: "누적 즐겨찾기", value: formatNumber(item.lifetimeFavorites) },
-      { label: "긍정평가/전체평가", value: formatVoteRatio(item.votesUp, item.ratingCount) },
+      {
+        label: "긍정평가/전체평가",
+        value: formatVoteRatio(item.votesUp, item.ratingCount),
+        fit: true,
+      },
+    ];
+  } else if (density === "notion") {
+    metrics = [
+      { label: "방문자", value: formatNumber(item.views) },
+      {
+        label: "현재구독/누적구독",
+        value: formatNumberPair(item.currentSubscriptions, item.lifetimeSubscriptions),
+        accent: true,
+        fit: true,
+      },
+      {
+        label: "현재즐겨찾기/누적즐겨찾기",
+        value: formatNumberPair(item.currentFavorites, item.lifetimeFavorites),
+        fit: true,
+      },
+      {
+        label: "긍정평가/전체평가",
+        value: formatVoteRatio(item.votesUp, item.ratingCount),
+        fit: true,
+      },
+      {
+        label: "구독률",
+        value: formatSubscriptionRate(item.currentSubscriptions, item.views),
+      },
     ];
   } else {
     metrics = [
@@ -210,7 +281,10 @@ function MetricGrid({ metrics }: { metrics: WidgetMetric[] }) {
   return (
     <section className="embed-metrics" aria-label="Workshop 통계">
       {metrics.map((metric) => (
-        <div key={metric.label} className={metric.accent ? "is-accent" : undefined}>
+        <div
+          key={metric.label}
+          className={[metric.accent ? "is-accent" : "", metric.fit ? "is-fit" : ""].filter(Boolean).join(" ") || undefined}
+        >
           <span>{metric.label}</span>
           <strong>{metric.value}</strong>
         </div>
@@ -225,28 +299,51 @@ interface ListColumn {
 }
 
 function GameModList({ density, items }: { density: EmbedDensity; items: WorkshopItem[] }) {
-  const columns: ListColumn[] = [
-    { label: "방문자", value: (item) => formatNumber(item.views) },
-    { label: "현재 구독", value: (item) => formatNumber(item.currentSubscriptions) },
-    { label: "누적 구독", value: (item) => formatNumber(item.lifetimeSubscriptions) },
-  ];
-  if (density !== "compact") {
-    columns.push({ label: "현재 즐겨찾기", value: (item) => formatNumber(item.currentFavorites) });
-  }
-  if (density === "full") {
-    columns.push({ label: "누적 즐겨찾기", value: (item) => formatNumber(item.lifetimeFavorites) });
-  }
-  if (density !== "compact") {
-    columns.push({
-      label: "긍정평가/전체평가",
-      value: (item) => formatVoteRatio(item.votesUp, item.ratingCount),
-    });
-  }
-  if (density === "full") {
-    columns.push(
-      { label: "평가 점수", value: (item) => formatScore(item.ratingScore) },
-      { label: "최근 수정", value: (item) => formatDate(item.updatedAt) },
-    );
+  let columns: ListColumn[];
+  if (density === "notion") {
+    columns = [
+      { label: "방문자", value: (item) => formatNumber(item.views) },
+      {
+        label: "현재구독/누적구독",
+        value: (item) => formatNumberPair(item.currentSubscriptions, item.lifetimeSubscriptions),
+      },
+      {
+        label: "현재즐겨찾기/누적즐겨찾기",
+        value: (item) => formatNumberPair(item.currentFavorites, item.lifetimeFavorites),
+      },
+      {
+        label: "긍정평가/전체평가",
+        value: (item) => formatVoteRatio(item.votesUp, item.ratingCount),
+      },
+      {
+        label: "구독률",
+        value: (item) => formatSubscriptionRate(item.currentSubscriptions, item.views),
+      },
+    ];
+  } else {
+    columns = [
+      { label: "방문자", value: (item) => formatNumber(item.views) },
+      { label: "현재 구독", value: (item) => formatNumber(item.currentSubscriptions) },
+      { label: "누적 구독", value: (item) => formatNumber(item.lifetimeSubscriptions) },
+    ];
+    if (density !== "compact") {
+      columns.push({ label: "현재 즐겨찾기", value: (item) => formatNumber(item.currentFavorites) });
+    }
+    if (density === "full") {
+      columns.push({ label: "누적 즐겨찾기", value: (item) => formatNumber(item.lifetimeFavorites) });
+    }
+    if (density !== "compact") {
+      columns.push({
+        label: "긍정평가/전체평가",
+        value: (item) => formatVoteRatio(item.votesUp, item.ratingCount),
+      });
+    }
+    if (density === "full") {
+      columns.push(
+        { label: "평가 점수", value: (item) => formatScore(item.ratingScore) },
+        { label: "최근 수정", value: (item) => formatDate(item.updatedAt) },
+      );
+    }
   }
 
   const gridStyle = {

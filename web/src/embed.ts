@@ -1,12 +1,14 @@
 import type { DashboardData, WorkshopItem } from "./types";
 
-export type EmbedDensity = "compact" | "standard" | "full";
+export type EmbedCanvas = "solid" | "transparent";
+export type EmbedDensity = "compact" | "standard" | "full" | "notion";
 export type EmbedTheme = "light" | "dark";
 
 export type EmbedConfig =
   | {
       kind: "game";
       appId: string | null;
+      canvas: EmbedCanvas;
       density: EmbedDensity;
       showList: boolean;
       theme: EmbedTheme;
@@ -14,6 +16,7 @@ export type EmbedConfig =
   | {
       kind: "item";
       publishedFileId: string | null;
+      canvas: EmbedCanvas;
       density: EmbedDensity;
       theme: EmbedTheme;
     };
@@ -27,7 +30,7 @@ export interface GameWidgetData {
   totals: DashboardData["totals"];
 }
 
-const DENSITIES = new Set<EmbedDensity>(["compact", "standard", "full"]);
+const DENSITIES = new Set<EmbedDensity>(["compact", "standard", "full", "notion"]);
 const THEMES = new Set<EmbedTheme>(["light", "dark"]);
 const NUMERIC_ID = /^\d+$/;
 
@@ -38,6 +41,7 @@ export function parseEmbedConfig(search: string): EmbedConfig | null {
 
   const densityValue = params.get("density") as EmbedDensity | null;
   const themeValue = params.get("theme") as EmbedTheme | null;
+  const canvas: EmbedCanvas = params.get("canvas") === "transparent" ? "transparent" : "solid";
   const density = densityValue && DENSITIES.has(densityValue) ? densityValue : "standard";
   const theme = themeValue && THEMES.has(themeValue) ? themeValue : "light";
 
@@ -46,6 +50,7 @@ export function parseEmbedConfig(search: string): EmbedConfig | null {
     return {
       kind,
       appId: appId && NUMERIC_ID.test(appId) ? appId : null,
+      canvas,
       density,
       showList: params.get("list") === "on",
       theme,
@@ -56,6 +61,7 @@ export function parseEmbedConfig(search: string): EmbedConfig | null {
   return {
     kind,
     publishedFileId: publishedFileId && NUMERIC_ID.test(publishedFileId) ? publishedFileId : null,
+    canvas,
     density,
     theme,
   };

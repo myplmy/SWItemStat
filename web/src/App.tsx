@@ -32,9 +32,11 @@ export default function App() {
   useEffect(() => {
     if (!embedConfig) return;
     document.documentElement.dataset.embedTheme = embedConfig.theme;
+    document.documentElement.dataset.embedCanvas = embedConfig.canvas;
     document.body.classList.add("embed-body");
     return () => {
       delete document.documentElement.dataset.embedTheme;
+      delete document.documentElement.dataset.embedCanvas;
       document.body.classList.remove("embed-body");
     };
   }, [embedConfig]);

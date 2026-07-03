@@ -55,6 +55,18 @@ export function formatVoteRatio(positive: number | null, total: number | null): 
   return `${formatNumber(positive)}/${formatNumber(total)} (${percentage}%)`;
 }
 
+export function formatNumberPair(current: number | null, lifetime: number | null): string {
+  return `${formatNumber(current)} / ${formatNumber(lifetime)}`;
+}
+
+export function formatSubscriptionRate(subscriptions: number | null, views: number | null): string {
+  if (subscriptions === null || views === null || views <= 0) return "—";
+  const percentage = new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format(
+    (subscriptions / views) * 100,
+  );
+  return `${percentage}%`;
+}
+
 export function formatDate(value: string | null): string {
   if (!value) return "—";
   const date = new Date(value);

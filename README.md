@@ -84,6 +84,7 @@ https://myplmy.github.io/SWItemStat/?embed=game&app=294100&density=standard&them
 ```text
 https://myplmy.github.io/SWItemStat/?embed=item&id=3598011620&density=standard&theme=light
 https://myplmy.github.io/SWItemStat/?embed=item&id=3547456198&density=full&theme=dark
+https://myplmy.github.io/SWItemStat/?embed=item&id=3547456198&density=notion&theme=dark&canvas=transparent
 ```
 
 지원하는 URL 파라미터:
@@ -91,9 +92,12 @@ https://myplmy.github.io/SWItemStat/?embed=item&id=3547456198&density=full&theme
 - `embed`: `game` 또는 `item`
 - `app`: 게임 위젯에서 사용할 Steam AppID
 - `id`: 개별 위젯에서 사용할 Workshop ID
-- `density`: `compact`, `standard`, `full` (기본값 `standard`)
+- `density`: `compact`, `standard`, `full`, `notion` (기본값 `standard`)
 - `theme`: `light`, `dark` (기본값 `light`)
+- `canvas`: 카드 바깥 배경을 없애려면 `transparent`, 일반 배경은 `solid` (기본값 `solid`)
 - `list`: 게임 위젯의 모드별 1행 통계 목록을 표시하려면 `on`, 숨기려면 `off` (기본값 `off`)
+
+`density=notion`은 방문자, 현재/누적 구독, 현재/누적 즐겨찾기, 긍정/전체 평가, 구독률을 정확히 5열로 표시합니다. 구독률은 현재 구독 수를 방문자 수로 나눈 값입니다. Notion의 부모 테마는 교차 출처 iframe에서 읽을 수 없으므로 `theme`은 직접 선택하고, 카드 바깥 영역만 부모 배경이 비치게 하려면 `canvas=transparent`를 함께 사용합니다.
 
 `list=on`은 모드명과 선택한 `density`에 맞는 개별 통계를 한 모드당 한 줄로 표시합니다. 좁은 Notion 블록에서는 목록 영역을 가로로 스크롤할 수 있습니다. 목록 없는 부모 페이지에는 Victoria 3와 RimWorld 게임 요약을 2열로 배치하고, 목록을 표시할 때는 충분한 너비의 1열 블록을 권장합니다. Notion 블록 높이는 `compact` 240~300px, `standard` 360~440px, `full` 560~700px을 기준으로 하되 `list=on`에서는 모드 수에 맞게 늘립니다.
 

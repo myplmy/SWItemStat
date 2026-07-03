@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { WorkshopItem } from "./types";
-import { buildCsv, filterAndSortItems, formatVoteRatio } from "./utils";
+import {
+  buildCsv,
+  filterAndSortItems,
+  formatNumberPair,
+  formatSubscriptionRate,
+  formatVoteRatio,
+} from "./utils";
 
 const base: WorkshopItem = {
   appId: "529340",
@@ -42,5 +48,12 @@ describe("dashboard utilities", () => {
     expect(formatVoteRatio(2, 3)).toBe("2/3 (66.7%)");
     expect(formatVoteRatio(null, 5)).toBe("—");
     expect(formatVoteRatio(0, 0)).toBe("—");
+  });
+
+  it("formats paired totals and the current subscription rate", () => {
+    expect(formatNumberPair(334, 1082)).toBe("334 / 1,082");
+    expect(formatNumberPair(null, 1082)).toBe("— / 1,082");
+    expect(formatSubscriptionRate(334, 1632)).toBe("20.5%");
+    expect(formatSubscriptionRate(1, 0)).toBe("—");
   });
 });

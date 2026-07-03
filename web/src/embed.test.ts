@@ -44,6 +44,7 @@ describe("embed configuration", () => {
     expect(parseEmbedConfig("?embed=game&app=529340&density=compact&theme=dark&list=on")).toEqual({
       kind: "game",
       appId: "529340",
+      canvas: "solid",
       density: "compact",
       showList: true,
       theme: "dark",
@@ -54,8 +55,13 @@ describe("embed configuration", () => {
     expect(parseEmbedConfig("?embed=item&id=not-a-number&density=wide&theme=blue")).toEqual({
       kind: "item",
       publishedFileId: null,
+      canvas: "solid",
       density: "standard",
       theme: "light",
+    });
+    expect(parseEmbedConfig("?embed=item&id=100&density=notion&canvas=transparent")).toMatchObject({
+      canvas: "transparent",
+      density: "notion",
     });
   });
 });
