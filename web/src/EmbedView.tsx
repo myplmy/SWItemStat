@@ -1,6 +1,13 @@
+import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import type { EmbedConfig, EmbedDensity, GameWidgetData } from "./embed";
-import { buildGameWidget, findWidgetItem } from "./embed";
+import type { EmbedConfig, EmbedDensity, GameWidgetData, WidgetListSortKey } from "./embed";
+import {
+  buildGameWidget,
+  DEFAULT_WIDGET_LIST_SORT,
+  findWidgetItem,
+  getNextWidgetListSort,
+  sortWidgetItems,
+} from "./embed";
 import type { DashboardData, WorkshopItem } from "./types";
 import {
   formatDate,
@@ -295,56 +302,81 @@ function MetricGrid({ metrics }: { metrics: WidgetMetric[] }) {
 
 interface ListColumn {
   label: string;
+  sortKey: WidgetListSortKey;
   value: (item: WorkshopItem) => string;
 }
 
 function GameModList({ density, items }: { density: EmbedDensity; items: WorkshopItem[] }) {
+  const [sort, setSort] = useState(DEFAULT_WIDGET_LIST_SORT);
   let columns: ListColumn[];
   if (density === "notion") {
     columns = [
-      { label: "방문자", value: (item) => formatNumber(item.views) },
+      { label: "방문자", sortKey: "views", value: (item) => formatNumber(item.views) },
       {
         label: "구독수(현재/누적)",
+        sortKey: "currentSubscriptions",
         value: (item) => formatNumberPair(item.currentSubscriptions, item.lifetimeSubscriptions),
       },
       {
         label: "즐겨찾기(현재/누적)",
+        sortKey: "currentFavorites",
         value: (item) => formatNumberPair(item.currentFavorites, item.lifetimeFavorites),
       },
       {
         label: "긍정평가/전체평가",
+        sortKey: "ratingCount",
         value: (item) => formatVoteRatio(item.votesUp, item.ratingCount),
       },
       {
         label: "구독률",
+        sortKey: "subscriptionRate",
         value: (item) => formatSubscriptionRate(item.currentSubscriptions, item.views),
       },
     ];
   } else {
     columns = [
-      { label: "방문자", value: (item) => formatNumber(item.views) },
-      { label: "현재 구독", value: (item) => formatNumber(item.currentSubscriptions) },
-      { label: "누적 구독", value: (item) => formatNumber(item.lifetimeSubscriptions) },
+      { label: "방문자", sortKey: "views", value: (item) => formatNumber(item.views) },
+      {
+        label: "현재 구독",
+        sortKey: "currentSubscriptions",
+        value: (item) => formatNumber(item.currentSubscriptions),
+      },
+      {
+        label: "누적 구독",
+        sortKey: "lifetimeSubscriptions",
+        value: (item) => formatNumber(item.lifetimeSubscriptions),
+      },
     ];
     if (density !== "compact") {
-      columns.push({ label: "현재 즐겨찾기", value: (item) => formatNumber(item.currentFavorites) });
+      columns.push({
+        label: "현재 즐겨찾기",
+        sortKey: "currentFavorites",
+        value: (item) => formatNumber(item.currentFavorites),
+      });
     }
     if (density === "full") {
-      columns.push({ label: "누적 즐겨찾기", value: (item) => formatNumber(item.lifetimeFavorites) });
+      columns.push({
+        label: "누적 즐겨찾기",
+        sortKey: "lifetimeFavorites",
+        value: (item) => formatNumber(item.lifetimeFavorites),
+      });
     }
     if (density !== "compact") {
       columns.push({
         label: "긍정평가/전체평가",
+        sortKey: "ratingCount",
         value: (item) => formatVoteRatio(item.votesUp, item.ratingCount),
       });
     }
     if (density === "full") {
       columns.push(
-        { label: "평가 점수", value: (item) => formatScore(item.ratingScore) },
-        { label: "최근 수정", value: (item) => formatDate(item.updatedAt) },
+        { label: "평가 점수", sortKey: "ratingScore", value: (item) => formatScore(item.ratingScore) },
+        { label: "최근 수정", sortKey: "updatedAt", value: (item) => formatDate(item.updatedAt) },
       );
     }
   }
+
+  const sortedItems = useMemo(() => sortWidgetItems(items, sort), [items, sort]);
 
   const gridStyle = {
     gridTemplateColumns: density === "notion"
@@ -362,10 +394,25 @@ function GameModList({ density, items }: { density: EmbedDensity; items: Worksho
     <section className={listClassName} aria-label="게임별 모드 통계 목록">
       <div className="embed-list-grid" role="table">
         <div className="embed-list-header" role="row" style={gridStyle}>
-          <span role="columnheader">모드</span>
-          {columns.map((column) => <span key={column.label} role="columnheader">{column.label}</span>)}
+          <SortHeader
+            activeKey={sort.key}
+            direction={sort.direction}
+            label="모드"
+            onSort={(key) => setSort((current) => getNextWidgetListSort(current, key))}
+            sortKey="title"
+          />
+          {columns.map((column) => (
+            <SortHeader
+              activeKey={sort.key}
+              direction={sort.direction}
+              key={column.label}
+              label={column.label}
+              onSort={(key) => setSort((current) => getNextWidgetListSort(current, key))}
+              sortKey={column.sortKey}
+            />
+          ))}
         </div>
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <div className="embed-list-row" key={item.publishedFileId} role="row" style={gridStyle}>
             <a href={item.workshopUrl} target="_blank" rel="noreferrer" role="cell" title={item.title}>
               {item.title}
@@ -377,6 +424,36 @@ function GameModList({ density, items }: { density: EmbedDensity; items: Worksho
         ))}
       </div>
     </section>
+  );
+}
+
+function SortHeader({
+  activeKey,
+  direction,
+  label,
+  onSort,
+  sortKey,
+}: {
+  activeKey: WidgetListSortKey;
+  direction: "asc" | "desc";
+  label: string;
+  onSort: (key: WidgetListSortKey) => void;
+  sortKey: WidgetListSortKey;
+}) {
+  const active = activeKey === sortKey;
+  const directionLabel = direction === "asc" ? "오름차순" : "내림차순";
+  return (
+    <span aria-sort={active ? (direction === "asc" ? "ascending" : "descending") : undefined} role="columnheader">
+      <button
+        aria-label={`${label} ${active ? `${directionLabel} 정렬됨` : "정렬"}`}
+        className="embed-list-sort-button"
+        onClick={() => onSort(sortKey)}
+        type="button"
+      >
+        <span>{label}</span>
+        {active && <span aria-hidden="true" className="embed-list-sort-indicator">{direction === "asc" ? "↑" : "↓"}</span>}
+      </button>
+    </span>
   );
 }
 

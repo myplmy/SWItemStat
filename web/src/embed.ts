@@ -3,6 +3,25 @@ import type { DashboardData, WorkshopItem } from "./types";
 export type EmbedCanvas = "solid" | "transparent" | "notion";
 export type EmbedDensity = "compact" | "standard" | "full" | "notion";
 export type EmbedTheme = "light" | "dark";
+export type WidgetListSortDirection = "asc" | "desc";
+export type WidgetListSortKey =
+  | "currentFavorites"
+  | "currentSubscriptions"
+  | "lifetimeFavorites"
+  | "lifetimeSubscriptions"
+  | "ratingCount"
+  | "ratingScore"
+  | "subscriptionRate"
+  | "title"
+  | "updatedAt"
+  | "views";
+
+export interface WidgetListSort {
+  direction: WidgetListSortDirection;
+  key: WidgetListSortKey;
+}
+
+export const DEFAULT_WIDGET_LIST_SORT: WidgetListSort = { direction: "desc", key: "views" };
 
 export type EmbedConfig =
   | {
@@ -98,6 +117,51 @@ export function buildGameWidget(data: DashboardData, appId: string): GameWidgetD
       views: sum(items, "views"),
     },
   };
+}
+
+export function getNextWidgetListSort(current: WidgetListSort, key: WidgetListSortKey): WidgetListSort {
+  if (current.key === key) {
+    return { direction: current.direction === "asc" ? "desc" : "asc", key };
+  }
+  return { direction: key === "title" ? "asc" : "desc", key };
+}
+
+export function sortWidgetItems(items: WorkshopItem[], sort: WidgetListSort): WorkshopItem[] {
+  return [...items].sort((left, right) => {
+    const primary = compareWidgetSortValues(
+      getWidgetSortValue(left, sort.key),
+      getWidgetSortValue(right, sort.key),
+      sort.direction,
+    );
+    if (primary !== 0) return primary;
+
+    const titleOrder = left.title.localeCompare(right.title, "ko", { numeric: true, sensitivity: "base" });
+    if (titleOrder !== 0) return titleOrder;
+    return left.publishedFileId.localeCompare(right.publishedFileId, "en", { numeric: true });
+  });
+}
+
+function getWidgetSortValue(item: WorkshopItem, key: WidgetListSortKey): number | string | null {
+  if (key === "subscriptionRate") {
+    if (item.currentSubscriptions === null || item.views === null || item.views <= 0) return null;
+    return item.currentSubscriptions / item.views;
+  }
+  return item[key];
+}
+
+function compareWidgetSortValues(
+  left: number | string | null,
+  right: number | string | null,
+  direction: WidgetListSortDirection,
+): number {
+  if (left === null && right === null) return 0;
+  if (left === null) return 1;
+  if (right === null) return -1;
+
+  const order = typeof left === "number" && typeof right === "number"
+    ? left - right
+    : String(left).localeCompare(String(right), "ko", { numeric: true, sensitivity: "base" });
+  return direction === "asc" ? order : -order;
 }
 
 function sumOptional(items: WorkshopItem[], key: keyof WorkshopItem): number | null {
